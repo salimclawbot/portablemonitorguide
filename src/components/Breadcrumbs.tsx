@@ -7,8 +7,8 @@ export function breadcrumbSchema(items: BreadcrumbItem[]) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://portablemonitorguide.com" },
-      ...items.map((item, idx) => ({ "@type": "ListItem", position: idx + 2, name: item.label, item: `https://portablemonitorguide.com${item.url}` })),
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://The Crafty CEO" },
+      ...items.map((item, idx) => ({ "@type": "ListItem", position: idx + 2, name: item.label, item: `https://The Crafty CEO${item.url}` })),
     ],
   };
 }

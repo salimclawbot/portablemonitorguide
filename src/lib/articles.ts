@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
 import remarkGfm from "remark-gfm";
@@ -26,14 +25,33 @@ function toSlug(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim();
 }
 
-function parseJsonField(value: unknown): Record<string, unknown> | null {
-  if (!value || typeof value !== "string") return null;
-  try {
-    const normalized = value.replaceAll("https://portablemonitorguide.com", "https://portablemonitorguide.com");
-    return JSON.parse(normalized);
-  } catch {
-    return null;
+function extractJsonLdBlocks(raw: string): { articleSchema: Record<string, unknown> | null; faqSchema: Record<string, unknown> | null; content: string } {
+  let articleSchema: Record<string, unknown> | null = null;
+  let faqSchema: Record<string, unknown> | null = null;
+  let content = raw;
+
+  // Match ```json\n<script type="application/ld+json">...```  or bare <script> blocks
+  const scriptRegex = /```json\s*\n?\s*<script[^>]*>\s*([\s\S]*?)\s*<\/script>\s*\n?```|<script[^>]*>\s*([\s\S]*?)\s*<\/script>/g;
+  let match;
+  while ((match = scriptRegex.exec(raw)) !== null) {
+    const jsonStr = (match[1] || match[2] || "").trim();
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed["@type"] === "Article") {
+        articleSchema = parsed;
+      } else if (parsed["@type"] === "FAQPage") {
+        faqSchema = parsed;
+      }
+    } catch {
+      // skip unparseable blocks
+    }
   }
+
+  // Remove the JSON-LD code blocks from content
+  content = content.replace(/```json\s*\n?\s*<script[^>]*>[\s\S]*?<\/script>\s*\n?```/g, "").trim();
+  content = content.replace(/<script[^>]*>[\s\S]*?<\/script>/g, "").trim();
+
+  return { articleSchema, faqSchema, content };
 }
 
 function processContent(raw: string): string {
@@ -49,17 +67,17 @@ export async function getArticle(slug: string): Promise<Article | null> {
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");
-  const parsed = matter(raw);
-  const data = parsed.data as Record<string, unknown>;
+  const { articleSchema, faqSchema, content: strippedContent } = extractJsonLdBlocks(raw);
 
-  const content = processContent(parsed.content);
+  const content = processContent(strippedContent);
   const result = await remark().use(remarkGfm).use(html, { sanitize: false }).process(content);
 
-  const title = (data.title as string) || slug;
-  const description = (data.meta_description as string) || "Portable monitor guide article.";
-  const author = (data.author as string) || "Dr. Alex Chen";
-  const date = (data.datePublished as string) || "2026-03-10";
-  const dateModified = (data.dateModified as string) || date;
+  const title = (articleSchema?.headline as string) || slug;
+  const description = (articleSchema?.description as string) || "Etsy shop guide article.";
+  const authorObj = articleSchema?.author as Record<string, unknown> | undefined;
+  const author = (authorObj?.name as string) || "Jordan Ellis";
+  const date = (articleSchema?.datePublished as string) || "2026-03-11";
+  const dateModified = (articleSchema?.dateModified as string) || date;
   const category = "Guide";
 
   let htmlContent = result.toString();
@@ -70,7 +88,7 @@ export async function getArticle(slug: string): Promise<Article | null> {
     return `<${tag} id="${id}">${text}</${tag}>`;
   });
 
-  const excerptMatch = parsed.content.match(/\*\*(.*?)\*\*/);
+  const excerptMatch = strippedContent.match(/\*\*(.*?)\*\*/);
   const excerpt = excerptMatch ? excerptMatch[1].trim() : description;
 
   return {
@@ -84,8 +102,8 @@ export async function getArticle(slug: string): Promise<Article | null> {
     dateModified,
     category,
     author,
-    faqSchema: parseJsonField(data.faq_schema),
-    articleSchema: parseJsonField(data.article_schema),
+    faqSchema,
+    articleSchema,
   };
 }
 

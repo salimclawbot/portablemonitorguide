@@ -161,3 +161,67 @@ body {
     font-size: 1.25rem;
   }
 }
+
+/* Responsive images — prevent overflow */
+img, .prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ============================
+   MOBILE RESPONSIVE FIX — images, figures, tables
+   Applied across all article content
+   ============================ */
+.prose img,
+.prose figure img,
+article img,
+.article-content img {
+  max-width: 100% !important;
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+.prose figure,
+article figure,
+.article-content figure {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Table scroll wrapper */
+.prose table,
+article table,
+.article-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+}
+
+/* Ensure no child element creates horizontal overflow */
+.prose > *,
+.prose p,
+.prose li,
+.prose blockquote {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Mobile table overflow fix — A1 compliance */
+table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+}
+
+article img {
+    max-width: 100%;
+    height: auto;
+}

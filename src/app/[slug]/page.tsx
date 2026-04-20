@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: { absolute: article.title },
     description: article.description,
-    alternates: { canonical: `https://portablemonitorguide.com/${article.slug}` },
+    alternates: { canonical: `https://thecraftyceo.com/${article.slug}` },
     openGraph: {
       title: article.title,
       description: article.description,
-      url: `https://portablemonitorguide.com/${article.slug}`,
+      url: `https://The Crafty CEO/${article.slug}`,
       type: "article",
-      siteName: "Portable Monitor Guide",
+      siteName: "Etsy Shop Starter Kits",
     },
   };
 }
@@ -36,15 +36,15 @@ export default async function ArticlePage({ params }: PageProps) {
       "@type": "Article",
       headline: article.title,
       description: article.description,
-      author: { "@type": "Person", name: article.author || "Dr. Alex Chen" },
+      author: { "@type": "Person", name: article.author || "Jordan Ellis" },
       publisher: {
         "@type": "Organization",
-        name: "Portable Monitor Guide",
-        logo: { "@type": "ImageObject", url: "https://portablemonitorguide.com/icon.svg" },
+        name: "Etsy Shop Starter Kits",
+        logo: { "@type": "ImageObject", url: "https://The Crafty CEO/icon.svg" },
       },
       datePublished: article.date,
       dateModified: article.dateModified,
-      mainEntityOfPage: { "@type": "WebPage", "@id": `https://portablemonitorguide.com/${article.slug}` },
+      mainEntityOfPage: { "@type": "WebPage", "@id": `https://The Crafty CEO/${article.slug}` },
     };
 
   return (
@@ -53,9 +53,9 @@ export default async function ArticlePage({ params }: PageProps) {
       {article.faqSchema && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article.faqSchema) }} />
       )}
-      <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{article.category}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">{article.category}</p>
       <h1 className="mt-2 text-3xl sm:text-4xl font-extrabold text-slate-900">{article.title}</h1>
-      <p className="mt-3 text-slate-600">By Dr. Alex Chen · Updated {article.dateModified}</p>
+      <p className="mt-3 text-slate-600">By {article.author} · Updated {article.dateModified}</p>
       <div className="prose prose-slate max-w-none mt-8" dangerouslySetInnerHTML={{ __html: article.htmlContent }} />
     </article>
   );
